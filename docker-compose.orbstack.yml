@@ -26,6 +26,29 @@ services:
     networks:
       - openviking-shared
 
+  # OpenAI 兼容 rerank 适配器：OpenViking 的 provider:"vikingdb" 指向的向量库
+  # rerank 端点已被火山弃用（400 Rerank is temporarily unavailable in VikingDB），
+  # 这里把 OpenAI rerank 协议转成知识库 /api/knowledge/service/rerank，
+  # ov.conf 用 rerank.provider="openai" 指过来。凭据在 ~/.openviking/rerank-kb.json（600，不入库）。
+  openviking-rerank-adapter:
+    image: openviking:gif_android-1c25783ee
+    container_name: openviking-rerank-adapter
+    entrypoint: ["python3", "/usr/local/bin/openviking-rerank-adapter"]
+    environment:
+      KB_RERANK_CREDS: /etc/openviking/rerank-kb.json
+    volumes:
+      - ./docker/openviking-rerank-adapter.py:/usr/local/bin/openviking-rerank-adapter:ro
+      - ~/.openviking/rerank-kb.json:/etc/openviking/rerank-kb.json:ro
+    healthcheck:
+      test: ["CMD-SHELL", "python3 -c \"import urllib.request;urllib.request.urlopen('http://127.0.0.1:8808/healthz')\" || exit 1"]
+      interval: 30s
+      timeout: 5s
+      start_period: 10s
+      retries: 3
+    restart: unless-stopped
+    networks:
+      - openviking-shared
+
 networks:
   openviking-shared:
     external: true
