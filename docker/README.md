@@ -64,6 +64,18 @@ docker compose -f docker-compose.orbstack.yml up -d
 暴露到公网。抓取配置与看板用仓库 `examples/grafana/`（`prometheus.yml`、
 `docker-compose.yml`、预置 dashboard）。
 
+容器日志：compose 里两个服务都设了 `logging` 上限（`json-file`，`max-size 50m` ×
+`max-file 3`）。`ov.conf` 的 `log.output=stdout`，此时 `log.rotation` 管不到 docker 的
+json 日志，必须靠这个上限，否则容器日志会无限增长。
+
+### 已生效的调优项
+
+| 配置 | 值 | 原因 |
+| --- | --- | --- |
+| `retrieval.apply_rerank_to_context` | `true` | 让 `search(mode="context")` 也用 rerank，否则 context 模式仍按向量分排序（每请求多一次 rerank 调用） |
+| `storage.agfs.pathlock.provider` | `sqlite` | 单机本地盘用 SQLite 路径锁，避免递归扫描业务目录；锁库在 `data/_system/pathlock/pathlock.db` |
+| `query_planner` | 显式配置（同 `vlm`，`thinking=false`） | 不配会隐式回退 `vlm`，口径不清 |
+
 ## Rerank（知识库适配器）
 
 火山已弃用向量库的 `POST /api/vikingdb/rerank`（任何调用都返回
