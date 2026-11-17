@@ -56,6 +56,13 @@ docker compose -f docker-compose.orbstack.yml up -d
   会临时停容器、备份后拉起。
 - 恢复：`docker stop openviking` → 把归档解包回 `~` → `docker compose -f docker-compose.orbstack.yml up -d`。
 
+## 指标（Prometheus）
+
+`server.observability.metrics.enabled=true` 后 `/metrics` 暴露 `openviking_*` 指标（HTTP 请求、
+检索、队列积压、执行器、组件健康等）。该端点**不做鉴权**，发布到 `1933` 即内网可见，别把它
+暴露到公网。抓取配置与看板用仓库 `examples/grafana/`（`prometheus.yml`、
+`docker-compose.yml`、预置 dashboard）。
+
 ## 验证
 
 ```bash
