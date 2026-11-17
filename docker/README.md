@@ -75,6 +75,8 @@ json 日志，必须靠这个上限，否则容器日志会无限增长。
 | `retrieval.apply_rerank_to_context` | `true` | 让 `search(mode="context")` 也用 rerank，否则 context 模式仍按向量分排序（每请求多一次 rerank 调用） |
 | `storage.agfs.pathlock.provider` | `sqlite` | 单机本地盘用 SQLite 路径锁，避免递归扫描业务目录；锁库在 `data/_system/pathlock/pathlock.db` |
 | `query_planner` | 显式配置（同 `vlm`，`thinking=false`） | 不配会隐式回退 `vlm`，口径不清 |
+| `memory.session_auto_commit.enabled` | `true` | 会话闲置后自动提交并抽取长期记忆；**只对启用后新建的会话生效**，存量会话 `auto_commit_policy` 仍为 `null`。默认 `idle_timeout_seconds=86400`（1 天），扫描间隔才是 600s |
+| `allow_private_networks` | `true` | 允许 `add_resource` 抓内网地址（`192.168.*` 等）；代价是内网 SSRF 面变大，别把服务暴露到不受信网络 |
 
 ## Rerank（知识库适配器）
 
