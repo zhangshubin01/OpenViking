@@ -37,6 +37,25 @@ docker compose -f docker-compose.orbstack.yml up -d
 - 不要在 Dockerfile 里补 socat 走老路：转发已由 `openviking-orbstack-forward.py` 承担。
 - `ov.conf` 与 `ovcli.conf` 都被 `.gitignore` 排除，含密钥，永远不要提交；`ovcli.conf` 用 `ov config add <name> --url http://127.0.0.1:1933 --activate` 在容器内生成。
 
+## 密钥存储
+
+模板里开了 `encryption.api_key_hashing.enabled`：用户 key 以 Argon2id 哈希存在各账号的
+`_system/users.json`，明文不可恢复。已有明文 key 会在服务启动时自动迁移（日志
+`Migrated API key for user ...`），**客户端手里的 key 不需要更换**；但此后
+`ov admin list-users --reveal-api-keys` 只能回 `key_prefix`，完整 key 只在创建用户或
+重置时显示一次。改这一项前先做备份：迁移不可逆。
+
+## 备份
+
+- 脚本 `~/.openviking-backups/backup.sh`，由 launchd 每天 03:30 触发
+  （`~/Library/LaunchAgents/com.shubinzhang.openviking-backup.plist`），保留最近 7 份，
+  日志写在 `~/.openviking-backups/backup.log`。
+- 热备份，服务不中断；排除 `data/bot/logs` 与 `studio-chrome-profile`，包含 `ov.conf`，
+  产物权限 600。
+- 冷备份（RocksDB/SQLite 要求一致时）：`COLD=1 ~/.openviking-backups/backup.sh`，
+  会临时停容器、备份后拉起。
+- 恢复：`docker stop openviking` → 把归档解包回 `~` → `docker compose -f docker-compose.orbstack.yml up -d`。
+
 ## 验证
 
 ```bash

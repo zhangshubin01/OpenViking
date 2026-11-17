@@ -37,5 +37,10 @@
     "level": "INFO",
     "format": "%(asctime)s - %(name)s - %(levelname)s - %(message)s",
     "output": "stdout"
+  },
+  "encryption": {
+    "api_key_hashing": {
+      "enabled": true
+    }
   }
 }
