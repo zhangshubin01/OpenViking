@@ -12,6 +12,7 @@ export interface FileBrowserWorkflowLabels {
   comparisonVersion: string;
   latest: string;
   rollback: string;
+  rollbackBadge: string;
   rollbackTitle: string;
   rollbackConfirm: string;
   rollbackHint: string;
@@ -20,6 +21,8 @@ export interface FileBrowserWorkflowLabels {
   importChoose: string;
   importDrop: string;
   importFormat: string;
+  importInvalidFormat: string;
+  importWriteRequired: string;
   configuration: string;
   configurationEmpty: string;
   historyEmpty: string;
@@ -103,6 +106,7 @@ export interface PreviewHistoryEntry {
   path: string;
   title: string;
   numbered?: boolean;
+  restored?: boolean;
   note?: string;
   timestamp?: number;
 }

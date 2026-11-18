@@ -1,6 +1,12 @@
+import { compileHelp } from './compile-help.js';
+import { transferErrors, transferSession } from './transfer-session.en-US.js';
+import { coreParameters } from './core-parameters.js';
+import filesystemParameters from './filesystem-parameters.js';
+import { SEARCH_PARAMETERS_EN_US } from './search-parameters.js';
 import type { ConsoleCommandGuide, ConsoleLabels } from '../types.js';
 
 const commands = {
+  ...transferSession,
   'add-resource': 'Add a resource from a URL',
   'add-skill': 'Install a Skill',
   'add-memory': 'Add memory directly',
@@ -57,6 +63,18 @@ const messages = {
     resource: 'The resource import is complete. Click to view the result.',
     viewResult: 'View result',
   },
+  compileQuickInputs: {
+    createWiki: {
+      label: 'Create Wiki',
+      prompt:
+        'Organize the files in the selected directory into a Wiki, preserving sources and the relationships between documents',
+    },
+    dailyReport: {
+      label: 'Schedule daily report',
+      prompt:
+        'Generate a daily report from the selected directory and schedule updates',
+    },
+  },
   commands,
   commandGuides: {
     'add-resource': {
@@ -85,46 +103,9 @@ const messages = {
         'Search for relevant resources, memories, and skills in the current context.',
       examples: ['ov find "What is the value of OpenViking?"'],
     },
-    'compile create': {
-      description:
-        'Save sources, destination, and Skill without starting compilation.',
-      examples: [
-        'ov compile create --compile-name demo-wiki --from viking://resources/source --to viking://resources/wiki --skill viking://system/compile/example-skills/llm-wiki',
-      ],
-    },
-    compile: {
-      description: 'Run a saved compilation configuration by name.',
-      examples: ['ov compile --compile-name demo-wiki'],
-      quickStart: {
-        documentation: {
-          label: 'Compilation guide',
-          href: 'https://docs.openviking.ai/en/context-compilation/01-overview',
-        },
-        steps: [
-          {
-            description:
-              'Verify that OpenViking is configured to run compilation.',
-          },
-          { description: 'Import the source material with add-resource.' },
-          {
-            description:
-              'Save the sources, destination, and Skill as a named configuration.',
-            command:
-              'ov compile create --compile-name <name> --from <source-uri> --to <target-uri> --skill <skill-uri>',
-          },
-          {
-            description:
-              'Run the saved configuration with its sources, destination, Skill, instructions, model, and schedule.',
-            command: 'ov compile --compile-name <name>',
-          },
-          {
-            description: 'Check the run status with the returned task ID.',
-            command: 'ov task status <task_id>',
-          },
-        ],
-      },
-    },
+    compile: compileHelp['en-US'].guide,
   } satisfies Partial<Record<keyof typeof commands, ConsoleCommandGuide>>,
+  compileArgsHelp: compileHelp['en-US'].args,
   parameters: {
     path: 'Remote path or URL to import',
     to: 'Destination URI',
@@ -133,22 +114,31 @@ const messages = {
     reason: 'Reason for importing',
     args: 'Parser options as a JSON object',
     'compile-args':
-      'JSON object for model_name, auto_update, and update_schedule',
-    wait: 'Wait for processing to complete',
+      'Valid JSON object for model and scheduling settings. Field names are case-sensitive.',
     'target-uri': 'Destination skills root',
     content: 'Plain text to remember',
     'session-id': 'Session to append and commit',
-    query: 'Semantic search query',
-    target_uri: 'Limit retrieval to this URI',
     limit: 'Maximum number of results',
-    level: 'Filter content levels, e.g. 0,1,2',
     'compile-name':
-      'A case-sensitive name of 1–64 ASCII letters, digits, underscores or hyphens, starting with a letter, digit or underscore',
+      'Case-sensitive name using Han characters, ASCII letters, digits, underscores or hyphens, with no leading hyphen. Up to 64 characters for ASCII-only names or 32 if the name contains Han characters.',
+    'compile-from':
+      'At least one existing readable source directory. Repeat --from or separate URIs with commas. Duplicate URIs are removed.',
+    'compile-to':
+      'Writable output directory. The server can create it if needed.',
     from: 'Existing source directory URIs. Repeat --from or separate URIs with commas',
     skill: 'Compiler Skill URI',
     instruction: 'Additional compilation instructions',
+    'task-type': 'Filter by task type, for example add_resource or add_skill',
+    'task-status':
+      'Filter by task status, for example pending, running, completed, or failed',
+    'task-id': 'ID of the background task',
+    ...coreParameters['en-US'],
+    ...filesystemParameters['en-US'],
+    ...SEARCH_PARAMETERS_EN_US,
   },
   commandGroups: {
+    transfer: 'File transfer',
+    session: 'Sessions',
     core: 'Core workflow',
     filesystem: 'Filesystem',
     search: 'Search & context',
@@ -157,6 +147,7 @@ const messages = {
   messages: {
     cancelled: () =>
       'Request cancelled; the server may still process an accepted operation.',
+    ...transferErrors,
     unknownCommand: () =>
       'Unknown command. Enter ov help for available commands.',
     shellSyntax: () => 'Shell syntax is not supported.',

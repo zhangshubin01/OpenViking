@@ -13,11 +13,16 @@ import {
 } from './file-browser-layout.js';
 import { FileBrowserTreePane } from './file-browser-tree-pane.js';
 import { FileBrowserSearch } from './file-browser-search.js';
-import { resolveLabels, resolvePreviewLabels } from './file-browser-labels.js';
+import {
+  resolveLabels,
+  resolvePreviewLabels,
+  resolveSummaryLabels,
+} from './file-browser-labels.js';
 import { useContainerWidth } from './use-container-width.js';
 import { useFileBrowserSearchDialog } from './use-file-browser-search-dialog.js';
 import { useFileBrowser } from './use-file-browser.js';
 import { useFileBrowserAcl } from './use-file-browser-acl.js';
+import { usePackImportPicker } from './use-pack-import-picker.js';
 import { useFileBrowserHandle } from './use-file-browser-handle.js';
 import { useFileBrowserUri } from './use-file-browser-uri.js';
 import type {
@@ -75,9 +80,8 @@ export const FileBrowserContent: FileBrowserComponent = forwardRef<
     useFileBrowserUri(uri, defaultUri, onUriChange);
   const [preferredTreeWidth, setPreferredTreeWidth] =
     useState(TREE_DEFAULT_WIDTH);
-  const { ref: layoutRef, width: layoutWidth } =
-    useContainerWidth<HTMLDivElement>();
-  const stacked = layoutWidth > 0 && layoutWidth < SIDE_BY_SIDE_MIN_WIDTH;
+  const { ref: layoutRef, width } = useContainerWidth<HTMLDivElement>();
+  const stacked = width > 0 && width < SIDE_BY_SIDE_MIN_WIDTH;
   const text = resolveLabels(labels, locale, stacked);
 
   // 上限随容器变化：宿主把整个模块塞进窄栏时，树不能继续按 520px 抢地方。当前
@@ -87,18 +91,14 @@ export const FileBrowserContent: FileBrowserComponent = forwardRef<
   // must not have the tree keep claiming 520px. The current width is re-clamped
   // rather than discarded, so the tree returns to where it was dragged once the
   // container widens again.
-  const treeMaxWidth = resolveTreeMaxWidth(layoutWidth);
+  const treeMaxWidth = resolveTreeMaxWidth(width);
   const treeWidth = Math.min(preferredTreeWidth, treeMaxWidth);
 
   // 摘要文案只影响展示，不作为预览请求的依赖。
   // Summary copy changes presentation without restarting preview requests.
   const summaryLabels = useMemo(
-    () => ({
-      l0: text.l0Summary,
-      l1: text.l1Overview,
-      failure: text.summaryFailed,
-    }),
-    [text.l0Summary, text.l1Overview, text.summaryFailed],
+    () => resolveSummaryLabels(locale, labels),
+    [locale, labels],
   );
 
   // 宿主文案和语言未变时，保留预览覆盖对象的引用。
@@ -128,17 +128,20 @@ export const FileBrowserContent: FileBrowserComponent = forwardRef<
   const permissions = useFileBrowserAcl({
     uri: browser.currentUri,
     acl,
+    readOnly,
     locale,
     labels: labels?.acl,
     requestOptions,
     refresh: browser.actions.refresh,
   });
+  const pack = usePackImportPicker(layoutRef, text, locale, permissions);
   const navigation = useFileBrowserHandle(
     browser,
     ref,
     rootUri,
     uri,
     reportedUri,
+    pack.choosePackFile,
   );
 
   const search = useFileBrowserSearchDialog(layoutRef);
@@ -216,20 +219,17 @@ export const FileBrowserContent: FileBrowserComponent = forwardRef<
         />
       </div>
       {permissions.drawer}
+      {pack.dialog}
       <FileBrowserSearch
         key={search.session}
-        open={search.open}
+        {...search.dialog}
         locale={locale}
         rootUri={rootUri}
-        triggerRef={layoutRef}
         text={text}
         requestOptions={requestOptions}
-        advancedOpen={search.advanced}
-        onToggleAdvanced={search.setAdvanced}
         onOpenResource={(target) => {
           void navigation.openResource(target).catch(() => {});
         }}
-        onClose={search.close}
       />
     </LocaleProvider>
   );
