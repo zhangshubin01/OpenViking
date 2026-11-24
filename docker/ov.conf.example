@@ -38,6 +38,24 @@
     "max_retries": 2,
     "api_key": "<your-ark-api-key>"
   },
+  "rules": {
+    "compiler": {
+      "provider": "volcengine",
+      "model": "ark-code-latest",
+      "api_base": "https://ark.cn-beijing.volces.com/api/plan/v3",
+      "api_key": "<your-ark-api-key>",
+      "temperature": 1.0,
+      "thinking": true,
+      "max_retries": 2
+    },
+    "compiler_context_window": 32768,
+    "jev_rule_matcher": {
+      "provider": "custom",
+      "api_base": "http://ollaya:11435/v1/systemone",
+      "model": "decider:0.8b",
+      "api_key": "local"
+    }
+  },
   "log": {
     "level": "INFO",
     "format": "%(asctime)s - %(name)s - %(levelname)s - %(message)s",
