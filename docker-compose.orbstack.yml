@@ -59,52 +59,6 @@ services:
     networks:
       - openviking-shared
 
-  # 本地 Jev 兼容决策服务：OpenViking 的 rules.jev_rule_matcher 用 provider:"custom"
-  # 指到 http://ollaya:11435/v1/systemone（TypeSafe System One 协议）。
-  # 模型存 ~/.ollaya，用 `docker exec ollaya ollaya pull decider:0.8b` 拉取。
-  # 未设 OLLAYA_API_KEY 时不要改这里的端口绑定成全网卡（同网络/本机进程可直接推理、拉删模型）。
-  ollaya:
-    image: ghcr.io/ollaya-dev/ollaya:0.18.0
-    container_name: ollaya
-    command: ["serve"]
-    environment:
-      # 模型加载后常驻（等价于每次请求带 keep_alive: -1），避免 5 分钟无请求卸载、
-      # 下次检索要先等约 5s 冷加载。0.18.0 还没有 OLLAYA_PRELOAD，只能靠首次请求加载。
-      OLLAYA_KEEP_ALIVE: "-1"
-    ports:
-      - "127.0.0.1:11435:11435"
-    volumes:
-      - ~/.ollaya:/home/ollaya/.ollaya
-    restart: unless-stopped
-    logging:
-      driver: json-file
-      options:
-        max-size: "20m"
-        max-file: "5"
-    networks:
-      - openviking-shared
-
-  # 启动预热：0.18.0 没有 OLLAYA_PRELOAD，模型要等第一次请求才加载（约 5-7s）。
-  # 这里在 ollaya 起来后跑一次判断，把模型以 keep_alive -1 装载，OpenViking 的检索就不会撞上冷加载。
-  # 跑完即退出（restart: "no"），共享 ollaya 的网络命名空间，CLI 直接连 127.0.0.1:11435。
-  ollaya-warmup:
-    image: ghcr.io/ollaya-dev/ollaya:0.18.0
-    container_name: ollaya-warmup
-    depends_on:
-      - ollaya
-    entrypoint: ["/bin/sh", "-c"]
-    command:
-      - |
-        for i in $(seq 1 60); do
-          if ollaya run decider:0.8b --ask warmup --keepalive -1 >/dev/null 2>&1; then
-            exit 0
-          fi
-          sleep 2
-        done
-        exit 0
-    network_mode: "service:ollaya"
-    restart: "no"
-
 networks:
   openviking-shared:
     external: true

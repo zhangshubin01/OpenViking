@@ -41,19 +41,17 @@
   "rules": {
     "compiler": {
       "provider": "volcengine",
-      "model": "ark-code-latest",
+      "model": "doubao-seed-2.1-pro",
       "api_base": "https://ark.cn-beijing.volces.com/api/plan/v3",
       "api_key": "<your-ark-api-key>",
-      "temperature": 1.0,
+      "temperature": 0.0,
       "thinking": true,
       "max_retries": 2
     },
     "compiler_context_window": 32768,
     "jev_rule_matcher": {
-      "provider": "custom",
-      "api_base": "http://ollaya:11435/v1/systemone",
-      "model": "decider:0.8b",
-      "api_key": "local"
+      "provider": "typesafe",
+      "api_key": "<your-typesafe-api-key>"
     }
   },
   "log": {
