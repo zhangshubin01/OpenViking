@@ -6,7 +6,7 @@
 # - 复用外部网络 openviking-shared，同网络的 clawith 走 http://openviking:1933/mcp
 services:
   openviking:
-    image: openviking:gif_android-f4308fccc
+    image: openviking:gif_android-3e2f2da56
     container_name: openviking
     entrypoint: ["/usr/local/bin/openviking-orbstack-entrypoint"]
     working_dir: /app/.openviking
@@ -36,7 +36,7 @@ services:
   # 这里把 OpenAI rerank 协议转成知识库 /api/knowledge/service/rerank，
   # ov.conf 用 rerank.provider="openai" 指过来。凭据在 ~/.openviking/rerank-kb.json（600，不入库）。
   openviking-rerank-adapter:
-    image: openviking:gif_android-f4308fccc
+    image: openviking:gif_android-3e2f2da56
     container_name: openviking-rerank-adapter
     entrypoint: ["python3", "/usr/local/bin/openviking-rerank-adapter"]
     environment:
