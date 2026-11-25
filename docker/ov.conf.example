@@ -32,11 +32,12 @@
   },
   "vlm": {
     "provider": "volcengine",
-    "model": "ark-code-latest",
+    "model": "doubao-seed-2.1-lite",
     "api_base": "https://ark.cn-beijing.volces.com/api/plan/v3",
     "temperature": 0.0,
     "max_retries": 2,
-    "api_key": "<your-ark-api-key>"
+    "api_key": "<your-ark-api-key>",
+    "thinking": false
   },
   "rules": {
     "compiler": {
@@ -48,12 +49,9 @@
       "thinking": true,
       "max_retries": 2
     },
-    "compiler_context_window": 32768,
-    "jev_rule_matcher": {
-      "provider": "typesafe",
-      "api_key": "<your-typesafe-api-key>"
-    }
+    "compiler_context_window": 32768
   },
+  "output_language_override": "zh-CN",
   "log": {
     "level": "INFO",
     "format": "%(asctime)s - %(name)s - %(levelname)s - %(message)s",
