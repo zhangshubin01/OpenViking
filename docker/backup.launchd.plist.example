@@ -1,0 +1,37 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+  OpenViking 每日备份的 launchd 定义（macOS）。
+
+  安装：
+    1. 把本文件里的 __HOME__ 换成当前用户家目录（例如 /Users/ovprod），
+       并把 docker/backup.sh 放到 __HOME__/.openviking-backups/backup.sh 并 chmod 700。
+    2. cp docker/backup.launchd.plist.example ~/Library/LaunchAgents/com.openviking.backup.plist
+    3. launchctl bootstrap gui/$(id -u) ~/Library/LaunchAgents/com.openviking.backup.plist
+  卸载：launchctl bootout gui/$(id -u)/com.openviking.backup
+  手动跑：sh ~/.openviking-backups/backup.sh
+-->
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+    <key>Label</key>
+    <string>com.openviking.backup</string>
+    <key>ProgramArguments</key>
+    <array>
+        <string>/bin/sh</string>
+        <string>__HOME__/.openviking-backups/backup.sh</string>
+    </array>
+    <key>StartCalendarInterval</key>
+    <dict>
+        <key>Hour</key>
+        <integer>3</integer>
+        <key>Minute</key>
+        <integer>30</integer>
+    </dict>
+    <key>RunAtLoad</key>
+    <false/>
+    <key>StandardOutPath</key>
+    <string>__HOME__/.openviking-backups/launchd.out.log</string>
+    <key>StandardErrorPath</key>
+    <string>__HOME__/.openviking-backups/launchd.err.log</string>
+</dict>
+</plist>
