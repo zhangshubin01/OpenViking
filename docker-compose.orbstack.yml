@@ -10,6 +10,12 @@ services:
     container_name: openviking
     entrypoint: ["/usr/local/bin/openviking-orbstack-entrypoint"]
     working_dir: /app/.openviking
+    # 团队共享实例：VikingBot 自 2026-09-23 起无真实会话，空占约 377MB 内存，默认关闭。
+    environment:
+      OPENVIKING_WITH_BOT: "0"
+    # 单进程 all-in-one（api + queue_worker + scheduler），给个上限，避免单次 ingest 拖垮宿主。
+    mem_limit: 4g
+    cpus: 6.0
     ports:
       - "1933:1933"
     volumes:
@@ -17,7 +23,8 @@ services:
       - ./docker/openviking-orbstack-entrypoint.sh:/usr/local/bin/openviking-orbstack-entrypoint:ro
       - ./docker/openviking-orbstack-forward.py:/usr/local/bin/openviking-orbstack-forward:ro
     healthcheck:
-      test: ["CMD-SHELL", "curl -fsS http://127.0.0.1:1934/health || exit 1"]
+      # /ready 才查 AGFS + VectorDB + APIKeyManager + Embedding，且不调用模型 provider
+      test: ["CMD-SHELL", "curl -fsS http://127.0.0.1:1934/ready || exit 1"]
       interval: 30s
       timeout: 5s
       start_period: 30s
